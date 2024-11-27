@@ -3,7 +3,19 @@
     data () {
       return {
         search: '',
-        calories: '',
+        headers: [
+          {
+            text: 'Dessert (100g serving)',
+            align: 'start',
+            filterable: false,
+            value: 'name',
+          },
+          { text: 'Calories', value: 'calories' },
+          { text: 'Fat (g)', value: 'fat' },
+          { text: 'Carbs (g)', value: 'carbs' },
+          { text: 'Protein (g)', value: 'protein' },
+          { text: 'Iron (%)', value: 'iron' },
+        ],
         desserts: [
           {
             name: 'Frozen Yogurt',
@@ -88,59 +100,25 @@
         ],
       }
     },
-    computed: {
-      headers () {
-        return [
-          {
-            text: 'Dessert (100g serving)',
-            align: 'start',
-            sortable: false,
-            value: 'name',
-          },
-          {
-            text: 'Calories',
-            value: 'calories',
-            filter: value => {
-              if (!this.calories) return true
-
-              return value < parseInt(this.calories)
-            },
-          },
-          { text: 'Fat (g)', value: 'fat' },
-          { text: 'Carbs (g)', value: 'carbs' },
-          { text: 'Protein (g)', value: 'protein' },
-          { text: 'Iron (%)', value: 'iron' },
-        ]
-      },
-    },
-    methods: {
-      filterOnlyCapsText (value, search, item) {
-        return value != null &&
-          search != null &&
-          typeof value === 'string' &&
-          value.toString().toLocaleUpperCase().indexOf(search) !== -1
-      },
-    },
   }
 </script>
+
+
+
 <template>
-  <div>
+  <v-card>
+    <v-card-title>
+      <v-text-field
+        v-model="search"
+        label="Search"
+      ></v-text-field>
+    </v-card-title>
     <v-data-table
       :headers="headers"
       :items="desserts"
-      item-key="name"
-      class="elevation-1"
       :search="search"
-      :custom-filter="filterOnlyCapsText"
     >
-      <template v-slot:top>
-        <v-text-field
-          v-model="search"
-          label="Search (UPPER CASE ONLY)"
-          class="mx-4"
-        ></v-text-field>
-      </template>
-      <template v-slot:body.append>
+    <template v-slot:body.append>
         <tr>
           <td></td>
           <td>
@@ -153,6 +131,7 @@
           <td colspan="4"></td>
         </tr>
       </template>
-    </v-data-table>
-  </div>
+  </v-data-table>
+  </v-card>
 </template>
+
