@@ -5,16 +5,16 @@
         search: '',
         headers: [
           {
-            text: 'Dessert (100g serving)',
             align: 'start',
-            filterable: false,
-            value: 'name',
+            key: 'name',
+            sortable: false,
+            title: 'Dessert (100g serving)',
           },
-          { text: 'Calories', value: 'calories' },
-          { text: 'Fat (g)', value: 'fat' },
-          { text: 'Carbs (g)', value: 'carbs' },
-          { text: 'Protein (g)', value: 'protein' },
-          { text: 'Iron (%)', value: 'iron' },
+          { key: 'calories', title: 'Calories' },
+          { key: 'fat', title: 'Fat (g)' },
+          { key: 'carbs', title: 'Carbs (g)' },
+          { key: 'protein', title: 'Protein (g)' },
+          { key: 'iron', title: 'Iron (%)' },
         ],
         desserts: [
           {
@@ -106,32 +106,25 @@
 
 
 <template>
-  <v-card>
-    <v-card-title>
+  <v-card
+    title="Nutrition"
+    flat
+  >
+    <template v-slot:text>
       <v-text-field
         v-model="search"
         label="Search"
+        prepend-inner-icon="mdi-magnify"
+        variant="outlined"
+        hide-details
+        single-line
       ></v-text-field>
-    </v-card-title>
+    </template>
+
     <v-data-table
       :headers="headers"
       :items="desserts"
       :search="search"
-    >
-    <template v-slot:body.append>
-        <tr>
-          <td></td>
-          <td>
-            <v-text-field
-              v-model="calories"
-              type="number"
-              label="Less than"
-            ></v-text-field>
-          </td>
-          <td colspan="4"></td>
-        </tr>
-      </template>
-  </v-data-table>
+    ></v-data-table>
   </v-card>
 </template>
-
