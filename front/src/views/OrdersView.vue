@@ -122,7 +122,10 @@ export default {
       :items="getOrders"
       :search="search"
       :items-per-page-options="options"
+      first-icon="$first"
+      last-icon="$last"
+      prev-icon="$prev"
+      next-icon="$next"
     ></v-data-table>
   </v-card>
-  <v-icon icon="$vuetify"></v-icon>
 </template>
