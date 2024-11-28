@@ -19,11 +19,10 @@ export default {
       customers,
       deliveries,
       items,
-      options: [
-        { value: 2, title: '2' },
-        { value: 5, title: '5' },
-      ],
+      options: [{ value: 5, title: '5' }],
       total: [],
+      date: '',
+      fullOrders: [],
     }
   },
   computed: {
@@ -32,35 +31,61 @@ export default {
       const customersMap = new Map(customers.map((customer) => [customer.user_id, customer]))
       const companiesMap = new Map(companies.map((company) => [company.company_id, company]))
 
-      return orders.map((order) => {
+      const fullOrders = orders.map((order) => {
         const customer = customersMap.get(order.customer_id)
         const company = companiesMap.get(customer ? customer.company_id : null)
         const orderItems = items.find((item) => item.order_id === order.id)
-        const event = new Date(order.created_at)
         const total = roundNumber(orderItems.price_per_unit, orderItems.quantity)
         this.total.push(total)
         return {
           orderName: order.order_name,
           customerCompany: company.company_name,
           customerName: customer ? customer.name : null,
-          orderDate: event.toLocaleDateString('en-US'),
-          deliveredAmount: `$ ${total}`,
+          orderDate: new Date(order.created_at),
+          deliveredAmount: total ? `$ ${total}` : '-',
         }
       })
-    },
-    getTotalAmount() {
-      return this.total.reduce((acc, value) => acc + value, 0)
+      return fullOrders
     },
   },
   components: {
     DatePicker,
     TotalAmount,
   },
+  methods: {
+    handleUpdateDate(date) {
+      this.date = date
+    },
+    getTotalAmount() {
+      return this.total.reduce((acc, value) => acc + value, 0)
+    },
+    getOrdersByDate() {
+      if (this.date) {
+        const [from, to] = this.date
+        const start = new Date(from)
+        const end = new Date(to)
+
+        const ordersByDate = this.getOrders.filter(
+          (order) => order.orderDate >= start && order.orderDate <= end,
+        )
+
+        this.fullOrders = ordersByDate
+      }
+    },
+  },
+  watch: {
+    date() {
+      this.getOrdersByDate()
+    },
+  },
+  mounted() {
+    this.fullOrders = !this.date ? this.getOrders : this.fullOrders
+  },
 }
 </script>
 
 <template>
-  <v-card flat>
+  <v-card>
     <template v-slot:text>
       <v-container>
         <v-row cols="12" sm="12" no-gutters>
@@ -74,20 +99,21 @@ export default {
         </v-row>
         <v-row>
           <v-col cols="12" sm="12" md="4">
-            <date-picker></date-picker>
+            <date-picker @updateDate="handleUpdateDate"></date-picker>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="12" sm="12" md="4">
-            <total-amount :totalAmount="getTotalAmount"></total-amount>
+            <total-amount :totalAmount="getTotalAmount()"></total-amount>
           </v-col>
         </v-row>
         <v-row>
           <v-data-table
             :headers="headers"
-            :items="getOrders"
+            :items="date ? fullOrders : getOrders"
             :search="search"
             :items-per-page-options="options"
+            :items-per-page="5"
             first-icon="$first"
             last-icon="$last"
             prev-icon="$prev"
@@ -98,3 +124,9 @@ export default {
     </template>
   </v-card>
 </template>
+
+<style>
+.v-card-text {
+  min-height: 100vh;
+}
+</style>
