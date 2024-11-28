@@ -1,4 +1,6 @@
 <script>
+import DatePicker from '@/components/DatePicker.vue'
+import TotalAmount from '@/components/TotalAmount.vue'
 import { orders, companies, customers, deliveries, items } from '../mocks'
 
 export default {
@@ -12,48 +14,6 @@ export default {
         { key: 'orderDate', title: 'Order date' },
         { key: 'deliveredAmount', title: 'Delivered Amount' },
       ],
-      // data: [
-      //   {
-      //     name: 'Frozen Yogurt',
-      //     calories: 159,
-      //     fat: 6.0,
-      //     carbs: 24,
-      //     protein: 4.0,
-      //     iron: 1,
-      //   },
-      //   {
-      //     name: 'Ice cream sandwich',
-      //     calories: 237,
-      //     fat: 9.0,
-      //     carbs: 37,
-      //     protein: 4.3,
-      //     iron: 1,
-      //   },
-      //   {
-      //     name: 'Eclair',
-      //     calories: 262,
-      //     fat: 16.0,
-      //     carbs: 23,
-      //     protein: 6.0,
-      //     iron: 7,
-      //   },
-      //   {
-      //     name: 'Cupcake',
-      //     calories: 305,
-      //     fat: 3.7,
-      //     carbs: 67,
-      //     protein: 4.3,
-      //     iron: 8,
-      //   },
-      //   {
-      //     name: 'Jelly bean',
-      //     calories: 375,
-      //     fat: 0.0,
-      //     carbs: 94,
-      //     protein: 0.0,
-      //     iron: 0,
-      //   },
-      // ],
       orders,
       companies,
       customers,
@@ -63,6 +23,7 @@ export default {
         { value: 2, title: '2' },
         { value: 5, title: '5' },
       ],
+      total: [],
     }
   },
   computed: {
@@ -75,57 +36,65 @@ export default {
         const customer = customersMap.get(order.customer_id)
         const company = companiesMap.get(customer ? customer.company_id : null)
         const orderItems = items.find((item) => item.order_id === order.id)
-
+        const event = new Date(order.created_at)
+        const total = roundNumber(orderItems.price_per_unit, orderItems.quantity)
+        this.total.push(total)
         return {
           orderName: order.order_name,
           customerCompany: company.company_name,
           customerName: customer ? customer.name : null,
-          orderDate: order.created_at,
-          deliveredAmount: `$ ${roundNumber(orderItems.price_per_unit, orderItems.quantity)}`,
+          orderDate: event.toLocaleDateString('en-US'),
+          deliveredAmount: `$ ${total}`,
         }
-
-        // const data = items.find((item) => item.order_id === order.id)
-        // const newCustomers = customers.find((customer) => customer.login === order.customer_id)
-        // const newCompanies = companies.find((company) =>
-        //   customers.find((customer) => customer.company_id === company.company_id),
-        // )
-        // console.log('companies', newCompanies)
-
-        // const newItems = items.find((item) => item.order_id === order.id)
-        // const item = {
-        //   orderName: order.order_name,
-        //   customerCompany: newCompanies.company_name,
-        //   customertName: newCustomers.name,
-        //   orderDate: order.created_at,
-        //   deliveredAmount: `$ ${newItems.price_per_unit}`,
-        // }
-        // return item
       })
     },
+    getTotalAmount() {
+      return this.total.reduce((acc, value) => acc + value, 0)
+    },
+  },
+  components: {
+    DatePicker,
+    TotalAmount,
   },
 }
 </script>
 
 <template>
-  <v-card title="Orders" flat>
+  <v-card flat>
     <template v-slot:text>
-      <v-text-field
-        v-model="search"
-        label="Search"
-        prepend-inner-icon="mdi-magnify"
-        variant="outlined"
-        single-line
-      ></v-text-field>
+      <v-container>
+        <v-row cols="12" sm="12" no-gutters>
+          <v-text-field
+            v-model="search"
+            label="Search"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            single-line
+          ></v-text-field>
+        </v-row>
+        <v-row>
+          <v-col cols="12" sm="12" md="4">
+            <date-picker></date-picker>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12" sm="12" md="4">
+            <total-amount :totalAmount="getTotalAmount"></total-amount>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-data-table
+            :headers="headers"
+            :items="getOrders"
+            :search="search"
+            :items-per-page-options="options"
+            first-icon="$first"
+            last-icon="$last"
+            prev-icon="$prev"
+            next-icon="$next"
+          ></v-data-table>
+        </v-row>
+      </v-container>
     </template>
-    <v-data-table
-      :headers="headers"
-      :items="getOrders"
-      :search="search"
-      :items-per-page-options="options"
-      first-icon="$first"
-      last-icon="$last"
-      prev-icon="$prev"
-      next-icon="$next"
-    ></v-data-table>
   </v-card>
 </template>
