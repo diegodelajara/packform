@@ -41,7 +41,12 @@ export default {
           orderName: order.order_name,
           customerCompany: company.company_name,
           customerName: customer ? customer.name : null,
-          orderDate: new Date(order.created_at),
+          // orderDate: new Date(order.created_at),
+          orderDate: new Intl.DateTimeFormat('en-AU', {
+            timeZone: 'Australia/Melbourne',
+            dateStyle: 'long',
+            timeStyle: 'long',
+          }).format(new Date(order.created_at)),
           deliveredAmount: total ? `$ ${total}` : '-',
         }
       })
@@ -59,11 +64,18 @@ export default {
     getTotalAmount() {
       return this.total.reduce((acc, value) => acc + value, 0)
     },
+    convertDate(date) {
+      return new Intl.DateTimeFormat('en-AU', {
+        timeZone: 'Australia/Melbourne',
+        dateStyle: 'long',
+        timeStyle: 'long',
+      }).format(new Date(date))
+    },
     getOrdersByDate() {
       if (this.date) {
         const [from, to] = this.date
-        const start = new Date(from)
-        const end = new Date(to)
+        const start = this.convertDate(from)
+        const end = this.convertDate(to)
 
         const ordersByDate = this.getOrders.filter(
           (order) => order.orderDate >= start && order.orderDate <= end,
@@ -88,6 +100,7 @@ export default {
   <v-card>
     <template v-slot:text>
       <v-container>
+        Search
         <v-row cols="12" sm="12" no-gutters>
           <v-text-field
             v-model="search"
